@@ -26,7 +26,7 @@ def print_help_statement():
           Signaly vs Temp: Not gonna say it again\n\
           \n\
           The possible resistors to calibrate the given temperature\
-          are platinum or just raw temp data")
+          are platinum, RuO and Cernox(raw_temp) data")
 
 def prompt_user():
     '''Takes the command line arguments and turns it into a string, which will
@@ -216,8 +216,11 @@ def collect_time():
     if cur_time[-1]-change_time>600 and include_voltage:
         print("Changing voltage")
         change_time=cur_time[-1]
-        current_voltage+=voltage_incriment
-        if current_voltage<=voltage_max:
+        if current_voltage<=voltage_max and voltage_min<voltage_max:
+            current_voltage+=voltage_incriment
+            incriment_voltages(current_voltage)
+        elif current_voltage>=voltage_max and voltage_min>voltage_max:
+            current_voltage-=voltage_incriment
             incriment_voltages(current_voltage)
         else:
             incriment_voltages('0')
@@ -319,10 +322,19 @@ def collect_from_LA(connection):
         connection='Dev1/ai2'
     elif connection=='Temp':
         connection = 'Dev1/ai4'
+    elif connection=='Thermocouple':
+        connection = 'Dev1/ai1'
     
     #Interacts with the BNC-2120 board and takes information
     with nidaqmx.Task() as task:
-        task.ai_channels.add_ai_voltage_chan("{}".format(connection))     
+        if connection=='Dev1/ai1':
+            task.ai_channels.add_ai_thrmcpl_chan("Dev1/ai1",name_to_assign_to_channel="", min_val=0.0,
+                                     max_val=100.0, units=nidaqmx.constants.TemperatureUnits.DEG_C,
+                                     thermocouple_type=nidaqmx.constants.ThermocoupleType.K,
+                                     cjc_source=nidaqmx.constants.CJCSource.CONSTANT_USER_VALUE, cjc_val=20.0,
+                                     cjc_channel="")
+        else:
+            task.ai_channels.add_ai_voltage_chan("{}".format(connection))     
         data = task.read(Samples_Per_Ch_To_Read )
         
     return data

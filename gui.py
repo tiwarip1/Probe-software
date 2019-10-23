@@ -109,11 +109,11 @@ class GUI(QWidget):
         label.move(10,184)
         
         #Min Voltage Sweep Label
-        label=QLabel('Minimum',self)
+        label=QLabel('Start',self)
         label.move(100,165)
         
         #Max Voltage Sweep Label
-        label=QLabel('Maximum',self)
+        label=QLabel('End',self)
         label.move(175,165)
         
         #Voltage Sweep Incriment Label
