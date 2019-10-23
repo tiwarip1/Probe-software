@@ -93,6 +93,7 @@ class GUI(QWidget):
         self.resistor.addItem("RuO")
         self.resistor.addItem("Raw_Temp.")
         self.resistor.addItem("resistance")
+        self.resistor.addItem("Thermocouple")
         self.resistor.move(220,95)
         
         #Comments Label

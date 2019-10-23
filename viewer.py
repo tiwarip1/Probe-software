@@ -253,8 +253,11 @@ def rand(connection):
     directory='../{}'.format(name)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    
-    temp = collect_from_LA('Temp')
+        
+    if resistor=='Thermocouple':
+        temp = collect_from_LA('Thermocouple')
+    else:
+        temp = collect_from_LA('Temp')
     signalx = collect_from_LA('Signalx')
     signaly = collect_from_LA('Signaly')
     time = collect_time()
@@ -276,6 +279,9 @@ def rand(connection):
             temp = ruthenium_oxide(temp)
         elif resistor=='resistance':
             pass
+        elif resistor=='Thermocouple':
+            for i in np.arange(0,len(temp)):
+                temp[i]+=273.15
             
         return temp,time
     
@@ -289,6 +295,9 @@ def rand(connection):
             temp = ruthenium_oxide(temp)
         elif resistor=='resistance':
             pass
+        elif resistor=='Thermocouple':
+            for i in np.arange(0,len(temp)):
+                temp[i]+=273.15
             
         return signalx,temp
     
@@ -306,6 +315,9 @@ def rand(connection):
             temp = ruthenium_oxide(temp)
         elif resistor=='resistance':
             pass
+        elif resistor=='Thermocouple':
+            for i in np.arange(0,len(temp)):
+                temp[i]+=273.15
             
         return signaly,temp
 
@@ -328,9 +340,8 @@ def collect_from_LA(connection):
     #Interacts with the BNC-2120 board and takes information
     with nidaqmx.Task() as task:
         if connection=='Dev1/ai1':
-            task.ai_channels.add_ai_thrmcpl_chan("Dev1/ai1",name_to_assign_to_channel="", min_val=0.0,
-                                     max_val=100.0, units=nidaqmx.constants.TemperatureUnits.DEG_C,
-                                     thermocouple_type=nidaqmx.constants.ThermocoupleType.K,
+            task.ai_channels.add_ai_thrmcpl_chan("Dev1/ai1",name_to_assign_to_channel="",\
+                                                 units=nidaqmx.constants.TemperatureUnits.DEG_C,
                                      cjc_source=nidaqmx.constants.CJCSource.CONSTANT_USER_VALUE, cjc_val=20.0,
                                      cjc_channel="")
         else:
