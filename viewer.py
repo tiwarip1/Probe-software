@@ -70,7 +70,7 @@ connection,name,bit_rate,resistor,voltage_min,voltage_max,voltage_incriment\
 
 voltage_min = float(voltage_min)
 voltage_max = float(voltage_max)
-voltage_incriment = float(voltage_incriment)
+voltage_incriment = float(voltage_incriment)/10
 
 if voltage_max==0:
     include_voltage=False
@@ -212,8 +212,8 @@ def collect_time():
     
     global change_time
     global current_voltage
-
-    if cur_time[-1]-change_time>600 and include_voltage:
+    print(cur_time[-1]-change_time)
+    if cur_time[-1]-change_time>60 and include_voltage:
         print("Changing voltage")
         change_time=cur_time[-1]
         if current_voltage<=voltage_max and voltage_min<voltage_max:
@@ -343,7 +343,7 @@ def collect_from_LA(connection):
             task.ai_channels.add_ai_thrmcpl_chan("Dev1/ai1",name_to_assign_to_channel="",\
                                                  units=nidaqmx.constants.TemperatureUnits.DEG_C,
                                      cjc_source=nidaqmx.constants.CJCSource.CONSTANT_USER_VALUE, cjc_val=20.0,
-                                     cjc_channel="")
+                                     cjc_channel="",thermocouple_type=nidaqmx.constants.ThermocoupleType.T)
         else:
             task.ai_channels.add_ai_voltage_chan("{}".format(connection))     
         data = task.read(Samples_Per_Ch_To_Read )
@@ -353,10 +353,11 @@ def collect_from_LA(connection):
 def raw_temp(R):
     '''This is for if you want to find the temperature with the regular setup
     that Di made with the resistors'''
-    #print(r)
+    
     temp=[]
     for r in R:
-        r=np.abs(r)*500
+        #print(r)
+        r=np.abs(r)*500 #multiplied by 100*(multiplier in mV)
         if r>=677.5 and r<=11692.44:
             z=np.log10(r)
             l=2.79109337883
