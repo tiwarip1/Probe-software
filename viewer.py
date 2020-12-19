@@ -34,6 +34,8 @@ def prompt_user():
     user, it takes the user's prompt, big difference'''
     connection = sys.argv
     connection.pop(0)
+    magnetometer = sys.argv[-1]
+    connection.pop(-1)
     voltage_incriment = sys.argv[-1]
     connection.pop(-1)
     voltage_max = sys.argv[-1]
@@ -63,14 +65,16 @@ def prompt_user():
             print_help_statement()
         sys.exit()
     
-    return spl,name,bit_rate,resistor,voltage_min,voltage_max,voltage_incriment
+    return spl,name,bit_rate,resistor,voltage_min,voltage_max,voltage_incriment\
+,magnetometer
 
-connection,name,bit_rate,resistor,voltage_min,voltage_max,voltage_incriment\
-= prompt_user()
+connection,name,bit_rate,resistor,voltage_min,voltage_max,voltage_incriment,\
+magnetometer = prompt_user()
 
 voltage_min = float(voltage_min)
 voltage_max = float(voltage_max)
 voltage_incriment = float(voltage_incriment)/10
+magnetometer = int(magnetometer)
 
 if voltage_max==0:
     include_voltage=False
@@ -176,7 +180,7 @@ if len(connection)>3:
 #pw.setXRange(0, 2)
 #pw.setYRange(0, 1e-10)
 
-def write_to_file(temp=[],signaly=[],signalx=[],time=[]):
+def write_to_file(temp=[],signaly=[],signalx=[],time=[],magnetic=[]):
     '''Writes a file that will be read later on, but appends data every 10
     samples'''
     
@@ -201,6 +205,12 @@ def write_to_file(temp=[],signaly=[],signalx=[],time=[]):
     if time!=[]:
         with open('../{}/Time.csv'.format(name),'a') as f:
             df=pd.DataFrame({'Time':time})
+            df.to_csv(f,header=False,index=False)
+            f.close()
+            
+    if magnetic!=[]:
+        with open('../{}/Magnetic.csv'.format(name),'a') as f:
+            df=pd.DataFrame({'Magnetic':magnetic})
             df.to_csv(f,header=False,index=False)
             f.close()
         
@@ -260,13 +270,20 @@ def rand(connection):
         temp = collect_from_LA('Temp')
     signalx = collect_from_LA('Signalx')
     signaly = collect_from_LA('Signaly')
+    if magnetometer == 1:
+        magnetic = collect_from_LA('Magnetometer')
+    else:
+        magnetic=[]
     time = collect_time()
     
-    write_to_file(temp=temp,signalx=signalx,signaly=signaly,time=time)
+    write_to_file(temp=temp,signalx=signalx,signaly=signaly,time=time,magnetic\
+                  =magnetic)
     
     temp = np.loadtxt('../{}/Temp.csv'.format(name))
     signalx = np.loadtxt('../{}/Signalx.csv'.format(name))
     signaly = np.loadtxt('../{}/Signaly.csv'.format(name))
+    if magnetometer == 1:
+        magnetic = np.loadtxt('../{}/Magnetic.csv'.format(name))
     time = np.loadtxt('../{}/Time.csv'.format(name))
     #specifies what needs to be returned, but collects data on everything
     if connection=='Temp':
@@ -336,6 +353,8 @@ def collect_from_LA(connection):
         connection = 'Dev1/ai4'
     elif connection=='Thermocouple':
         connection = 'Dev1/ai1'
+    elif connection=='Magnetometer':
+        connection = 'Dev1/ai5'
     
     #Interacts with the BNC-2120 board and takes information
     with nidaqmx.Task() as task:

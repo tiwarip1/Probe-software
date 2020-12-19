@@ -28,7 +28,7 @@ class GUI(QWidget):
         self.title = 'Super Awesome Temperature Probe Program'
         self.left = 0
         self.top = 50
-        self.width = 360
+        self.width = 480
         self.height = 220
         self.button_count=0
         self.label_count=0
@@ -139,6 +139,11 @@ class GUI(QWidget):
         self.inc_volt.resize(80,25)
         self.inc_volt.setText('0')
         
+        #Checkbox for collecting magnetic interference
+        self.mag_inter = QCheckBox('Magnetic interferece',self)
+        self.mag_inter.move(350,0)
+        self.mag_inter.resize(320,40)
+        
     def exiting(self):
         '''Used only by the quit button to exit the program "gracefully"'''
         sys.exit()
@@ -188,6 +193,11 @@ class GUI(QWidget):
         state3 = self.b3.isChecked()
         state4 = self.b4.isChecked()
         
+        if self.mag_inter.isChecked():
+            interference = 1
+        else:
+            interference = 0
+        
         states_l = [state1,state2,state3,state4]
         commands = ['Temp','Signalx vs Temp','Signaly vs Temp',\
                     'Signaly vs Signalx']
@@ -200,17 +210,19 @@ class GUI(QWidget):
         str_used = ' ; '.join(to_be_used_commands) 
         resist = str(self.resistor.currentText())
         
-        cmd = 'python viewer.py {} {} {} {} {} {} {}'.format(str_used,\
+        cmd = 'python viewer.py {} {} {} {} {} {} {} {}'.format(str_used,\
                                 self.projname.text(),self.sampsec.text()\
                                 ,resist,self.min_volt.text(),\
-                                self.max_volt.text(),self.inc_volt.text())
+                                self.max_volt.text(),self.inc_volt.text(),\
+                                interference)
         print(cmd)
         os.system(cmd)  
         #This is to get around a problem when a file is first being created
-        cmd = 'python viewer.py {} {} {} {} {} {} {}'.format(str_used,\
+        cmd = 'python viewer.py {} {} {} {} {} {} {} {}'.format(str_used,\
                                 self.projname.text(),self.sampsec.text(),\
                                 resist,self.min_volt.text(),\
-                                self.max_volt.text(),self.inc_volt.text())
+                                self.max_volt.text(),self.inc_volt.text(),\
+                                interference)
         os.system(cmd)
     
 if __name__ == '__main__':
